@@ -1,4 +1,7 @@
 import sqlite3
+import datetime
+
+data = datetime.datetime.now().isoformat()
 
 def conectar():
     return sqlite3.connect("usuarios.db")
