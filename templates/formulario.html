@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+    {{ titulo }} | UserFlow
+{% endblock %}
+
+
+{% block content %}
+
+<section class="form-page">
+
+    <a href="{{ url_for('index') }}" class="back-link">
+        ← Voltar para usuários
+    </a>
+
+
+    <div class="form-heading">
+
+        <p class="eyebrow">
+            GERENCIAMENTO DE CADASTROS
+        </p>
+
+        <h1>{{ titulo }}</h1>
+
+        <p>
+            Preencha os campos abaixo para
+            {% if modo == "criar" %}
+                cadastrar um novo usuário.
+            {% else %}
+                atualizar os dados do usuário.
+            {% endif %}
+        </p>
+
+    </div>
+
+
+    <section class="form-card">
+
+        <div class="form-card-heading">
+
+            <div class="form-icon">
+                U
+            </div>
+
+            <div>
+
+                <h2>Dados do usuário</h2>
+
+                <p>
+                    Os campos marcados com * são obrigatórios.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{% if modo == 'criar' %}
+                        {{ url_for('criar_usuario') }}
+                    {% else %}
+                        {{ url_for(
+                            'editar_usuario',
+                            usuario_id=usuario_id
+                        ) }}
+                    {% endif %}"
+            class="user-form"
+        >
+
+            <div class="form-group">
+
+                <label for="nome">
+                    Nome completo <span>*</span>
+                </label>
+
+                <input
+                    id="nome"
+                    name="nome"
+                    type="text"
+                    value="{{ dados.nome }}"
+                    placeholder="Digite o nome completo"
+                    autocomplete="name"
+                    minlength="2"
+                    maxlength="100"
+                    required
+                    autofocus
+                >
+
+                <small>
+                    Informe o nome que será exibido no cadastro.
+                </small>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="email">
+                    E-mail <span>*</span>
+                </label>
+
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value="{{ dados.email }}"
+                    placeholder="exemplo@email.com"
+                    autocomplete="email"
+                    maxlength="254"
+                    required
+                >
+
+                <small>
+                    Utilize um endereço de e-mail válido.
+                </small>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <a
+                    href="{{ url_for('index') }}"
+                    class="button button-secondary"
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    class="button button-primary"
+                >
+                    {% if modo == "criar" %}
+                        Cadastrar usuário
+                    {% else %}
+                        Salvar alterações
+                    {% endif %}
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</section>
+
+{% endblock %}

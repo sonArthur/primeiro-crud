@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Aplicação de gerenciamento e cadastro de usuários."
+    >
+
+    <title>
+        {% block title %}CRUD de Usuários{% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+    <header class="topbar">
+
+        <div class="topbar-content">
+
+            <a href="{{ url_for('index') }}" class="brand">
+
+                <span class="brand-mark">U</span>
+
+                <span class="brand-name">
+                    User<span>Flow</span>
+                </span>
+
+            </a>
+
+            <div class="topbar-label">
+                SISTEMA DE GESTÃO DE USUÁRIOS
+            </div>
+
+        </div>
+
+    </header>
+
+    <main class="main-container">
+
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+
+            {% if mensagens %}
+
+                <section class="flash-container" aria-live="polite">
+
+                    {% for categoria, mensagem in mensagens %}
+
+                        <div class="flash-message {{ categoria }}">
+
+                            <span>{{ mensagem }}</span>
+
+                        </div>
+
+                    {% endfor %}
+
+                </section>
+
+            {% endif %}
+
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+    <footer class="footer">
+
+        <p>
+            UserFlow · Projeto desenvolvido em Python com Flask e SQLite.
+        </p>
+
+    </footer>
+
+</body>
+
+</html>

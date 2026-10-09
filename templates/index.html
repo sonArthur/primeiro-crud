@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Usuários | UserFlow
+{% endblock %}
+
+
+{% block content %}
+
+<section class="page-heading">
+
+    <div>
+
+        <p class="eyebrow">
+            PAINEL / USUÁRIOS
+        </p>
+
+        <h1>
+            Seus usuários,<br>
+            <span>em um só lugar.</span>
+        </h1>
+
+        <p class="page-description">
+            Cadastre, consulte e mantenha seus registros organizados.
+        </p>
+
+    </div>
+
+    <a
+        href="{{ url_for('criar_usuario') }}"
+        class="button button-primary"
+    >
+        <span class="button-icon">+</span>
+        Novo usuário
+    </a>
+
+</section>
+
+
+<!-- Indicador de total de usuários -->
+
+<section class="stats-grid">
+
+    <article class="stat-card">
+
+        <div class="stat-icon">
+            U
+        </div>
+
+        <div class="stat-information">
+
+            <p>Total de usuários</p>
+
+            <strong>{{ total_usuarios }}</strong>
+
+            <span>Registros cadastrados</span>
+
+        </div>
+
+    </article>
+
+    <article class="info-card">
+
+        <span class="status-dot"></span>
+
+        <div>
+
+            <strong>Sistema operacional</strong>
+
+            <p>Aplicação conectada ao banco de dados local.</p>
+
+        </div>
+
+    </article>
+
+</section>
+
+
+<!-- Tabela de usuários -->
+
+<section class="panel">
+
+    <div class="panel-heading">
+
+        <div>
+
+            <h2>Lista de usuários</h2>
+
+            <p>
+                Consulte e gerencie os registros cadastrados.
+            </p>
+
+        </div>
+
+        <form
+            action="{{ url_for('index') }}"
+            method="GET"
+            class="search-form"
+        >
+
+            <label for="search" class="visually-hidden">
+                Buscar usuário por nome ou e-mail
+            </label>
+
+            <input
+                id="search"
+                type="search"
+                name="q"
+                value="{{ termo }}"
+                placeholder="Buscar usuário..."
+            >
+
+            <button
+                type="submit"
+                class="button button-search"
+            >
+                Buscar
+            </button>
+
+        </form>
+
+    </div>
+
+
+    {% if usuarios %}
+
+        <div class="table-responsive">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuário</th>
+                        <th>E-mail</th>
+                        <th class="actions-heading">Ações</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for usuario in usuarios %}
+
+                        <tr>
+
+                            <td class="id-cell">
+                                #{{ usuario.id }}
+                            </td>
+
+                            <td>
+
+                                <div class="user-cell">
+
+                                    <span class="avatar">
+                                        {{ usuario.nome[:1]|upper if usuario.nome else "?" }}
+                                    </span>
+
+                                    <span class="user-name">
+                                        {{ usuario.nome }}
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+                            <td class="email-cell">
+                                {{ usuario.email }}
+                            </td>
+
+                            <td>
+
+                                <div class="action-group">
+
+                                    <a
+                                        href="{{ url_for(
+                                            'editar_usuario',
+                                            usuario_id=usuario.id
+                                        ) }}"
+                                        class="action-button edit-button"
+                                        aria-label="Editar {{ usuario.nome }}"
+                                    >
+                                        Editar
+                                    </a>
+
+                                    <form
+                                        action="{{ url_for(
+                                            'excluir_usuario',
+                                            usuario_id=usuario.id
+                                        ) }}"
+                                        method="POST"
+                                        onsubmit="return confirm(
+                                            'Tem certeza de que deseja excluir este usuário?'
+                                        );"
+                                    >
+
+                                        <button
+                                            type="submit"
+                                            class="action-button delete-button"
+                                        >
+                                            Excluir
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ?
+            </div>
+
+            {% if termo %}
+
+                <h3>Nenhum resultado encontrado</h3>
+
+                <p>
+                    Não encontramos usuários correspondentes a
+                    "{{ termo }}".
+                </p>
+
+                <a href="{{ url_for('index') }}" class="text-link">
+                    Limpar pesquisa
+                </a>
+
+            {% else %}
+
+                <h3>Nenhum usuário cadastrado</h3>
+
+                <p>
+                    Comece cadastrando seu primeiro usuário.
+                </p>
+
+                <a
+                    href="{{ url_for('criar_usuario') }}"
+                    class="button button-primary"
+                >
+                    Cadastrar primeiro usuário
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+
+    <div class="panel-footer">
+
+        <span>
+            Total nesta visualização:
+            <strong>{{ usuarios|length }}</strong>
+        </span>
+
+        <span class="footer-status">
+            Gerenciamento de usuários
+        </span>
+
+    </div>
+
+</section>
+
+{% endblock %}
