@@ -11,6 +11,7 @@ from flask import (
 )
 
 from services.usuario_service import UsuarioService
+from database import criar_tabela
 
 
 # ============================================================
@@ -26,6 +27,10 @@ app.config["SECRET_KEY"] = os.environ.get(
     "FLASK_SECRET_KEY",
     "chave-local-apenas-desenvolvimento",
 )
+
+
+# Garante que a tabela exista antes de utilizar o serviço.
+#criar_tabela()
 
 # Instância do serviço responsável pelas regras de negócio.
 service = UsuarioService()
@@ -216,5 +221,5 @@ def pagina_nao_encontrada(erro):
 # ============================================================
 
 if __name__ == "__main__":
+    criar_tabela()
     app.run(debug=True)
-    
