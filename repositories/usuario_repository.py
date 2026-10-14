@@ -157,4 +157,3 @@ class UsuarioRepository:
 
         finally:
             conn.close()
-            

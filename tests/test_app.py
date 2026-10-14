@@ -1,21 +1,41 @@
+import re
+
 import pytest
 
 import app as flask_app
 
 
+def obter_token_csrf(response):
+    """Extrai o token CSRF de uma página HTML."""
+
+    html = response.get_data(as_text=True)
+
+    correspondencia = re.search(
+        r'<input[^>]*name="csrf_token"[^>]*value="([^"]+)"',
+        html,
+    )
+
+    assert correspondencia is not None, (
+        "Token CSRF não encontrado no formulário."
+    )
+
+    return correspondencia.group(1)
+
+
 @pytest.fixture
 def client(service, monkeypatch):
-    """
-    Cria um cliente de testes do Flask utilizando
-    o serviço conectado ao banco temporário.
-    """
+    """Cria um cliente de testes com banco isolado."""
 
-    # Substitui o serviço global da aplicação pelo serviço de teste.
-    monkeypatch.setattr(flask_app, "service", service)
+    monkeypatch.setattr(
+        flask_app,
+        "service",
+        service,
+    )
 
     flask_app.app.config.update(
         TESTING=True,
-        SECRET_KEY="chave-secreta-de-teste",
+        SECRET_KEY="chave-secreta-exclusiva-dos-testes",
+        WTF_CSRF_ENABLED=True,
     )
 
     with flask_app.app.test_client() as test_client:
@@ -34,11 +54,16 @@ def test_pagina_inicial(client):
 
 
 def test_cadastrar_usuario_pela_interface(client, service):
+    formulario = client.get("/usuarios/novo")
+
+    token = obter_token_csrf(formulario)
+
     response = client.post(
         "/usuarios/novo",
         data={
             "nome": "Arthur Santos",
             "email": "arthur@example.com",
+            "csrf_token": token,
         },
         follow_redirects=True,
     )
@@ -50,9 +75,7 @@ def test_cadastrar_usuario_pela_interface(client, service):
     assert "Arthur Santos" in conteudo
     assert "arthur@example.com" in conteudo
 
-    usuarios = service.listar_usuarios()
-
-    assert len(usuarios) == 1
+    assert len(service.listar_usuarios()) == 1
 
 
 def test_rejeitar_email_duplicado_pela_interface(
@@ -64,11 +87,16 @@ def test_rejeitar_email_duplicado_pela_interface(
         "arthur@example.com",
     )
 
+    formulario = client.get("/usuarios/novo")
+
+    token = obter_token_csrf(formulario)
+
     response = client.post(
         "/usuarios/novo",
         data={
             "nome": "Outro Usuário",
             "email": "ARTHUR@EXAMPLE.COM",
+            "csrf_token": token,
         },
         follow_redirects=True,
     )
@@ -78,8 +106,6 @@ def test_rejeitar_email_duplicado_pela_interface(
     conteudo = response.get_data(as_text=True)
 
     assert "Este e-mail já está cadastrado." in conteudo
-
-    # O cadastro duplicado não deve ter sido criado.
     assert len(service.listar_usuarios()) == 1
 
 
@@ -110,11 +136,18 @@ def test_editar_usuario_pela_interface(client, service):
         "arthur@example.com",
     )
 
+    formulario = client.get(
+        f"/usuarios/{usuario.id}/editar"
+    )
+
+    token = obter_token_csrf(formulario)
+
     response = client.post(
         f"/usuarios/{usuario.id}/editar",
         data={
             "nome": "Arthur Atualizado",
             "email": "novo@example.com",
+            "csrf_token": token,
         },
         follow_redirects=True,
     )
@@ -138,8 +171,13 @@ def test_excluir_usuario_pela_interface(client, service):
         "arthur@example.com",
     )
 
+    pagina = client.get("/")
+
+    token = obter_token_csrf(pagina)
+
     response = client.post(
         f"/usuarios/{usuario.id}/excluir",
+        data={"csrf_token": token},
         follow_redirects=True,
     )
 
@@ -159,3 +197,19 @@ def test_editar_usuario_inexistente_retorna_404(client):
     conteudo = response.get_data(as_text=True)
 
     assert "Não encontramos essa página." in conteudo
+
+
+def test_rejeitar_post_sem_token_csrf(client):
+    response = client.post(
+        "/usuarios/novo",
+        data={
+            "nome": "Usuário Teste",
+            "email": "teste@example.com",
+        },
+    )
+
+    assert response.status_code == 400
+
+    conteudo = response.get_data(as_text=True)
+
+    assert "Não foi possível validar o formulário." in conteudo

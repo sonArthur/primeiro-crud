@@ -138,4 +138,3 @@ def test_buscar_usuario_inexistente(service):
     usuario = service.buscar_usuario(9999)
 
     assert usuario is None
-    

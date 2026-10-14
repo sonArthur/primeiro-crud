@@ -119,4 +119,3 @@ class UsuarioService:
         """Exclui um usuário existente."""
 
         return self.repository.deletar(usuario_id)
-    

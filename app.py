@@ -12,21 +12,31 @@ from flask import (
 
 from services.usuario_service import UsuarioService
 from database import criar_tabela
-
+from dotenv import load_dotenv
+from flask_wtf.csrf import CSRFProtect, CSRFError
 
 # ============================================================
 # CONFIGURAÇÃO DA APLICAÇÃO
 # ============================================================
 
+# Carrega as variáveis do arquivo .env.
+load_dotenv()
+
 app = Flask(__name__)
 
-# Necessário para o funcionamento das mensagens flash.
-# A chave padrão serve apenas para desenvolvimento local.
-# Em produção, configure a variável de ambiente FLASK_SECRET_KEY.
-app.config["SECRET_KEY"] = os.environ.get(
-    "FLASK_SECRET_KEY",
-    "chave-local-apenas-desenvolvimento",
-)
+# A aplicação não inicia sem uma chave secreta configurada.
+secret_key = os.environ.get("FLASK_SECRET_KEY")
+
+if not secret_key:
+    raise RuntimeError(
+        "Configure FLASK_SECRET_KEY no arquivo .env "
+        "antes de iniciar a aplicação."
+    )
+
+app.config["SECRET_KEY"] = secret_key
+
+# Protege globalmente as requisições que modificam dados.
+csrf = CSRFProtect(app)
 
 
 # Garante que a tabela exista antes de utilizar o serviço.
@@ -206,6 +216,9 @@ def excluir_usuario(usuario_id):
 # ============================================================
 # PÁGINA DE ERRO 404
 # ============================================================
+@app.errorhandler(CSRFError)
+def handle_csrf_error(erro):
+    return render_template("csrf_error.html"), 400
 
 @app.errorhandler(404)
 def pagina_nao_encontrada(erro):
