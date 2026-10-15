@@ -1,4 +1,4 @@
-# UserFlow — Sistema de Gerenciamento de Usuários
+# Gerenciador de Usuários — Sistema de Gerenciamento de Usuários
 
 Aplicação web desenvolvida em Python para gerenciamento de usuários, utilizando Flask e SQLite.
 
